@@ -21,21 +21,20 @@ cl_device_id get_device() {
     err |= clGetPlatformIDs(1, &platform, nullptr);
     err |= clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, nullptr);
     if (err == CL_DEVICE_NOT_FOUND) {
-        printf("Took cpu\n");
+//        printf("Took cpu\n");
         err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 1, &device, nullptr);
     } else {
-        printf("Took gpu\n");
+//        printf("Took gpu\n");
     }
     if (err) {
         throw;
     }
-    printf("%s ", get_device_name(device).c_str());
+//    printf("%s\n", get_device_name(device).c_str());
     return device;
 };
 
 void executeKernel(const char *&program_text, const size_t &program_len, const char *kernel_name, size_t res_size, const SpatialData * res,
                    const SpatialData * input, size_t input_size, size_t in_size, size_t glob_size) {
-
     cl_device_id device_id = get_device();
     cl_int err;
     cl_context context = clCreateContext(nullptr, 1, &device_id, nullptr, nullptr, &err);
@@ -68,7 +67,7 @@ void executeKernel(const char *&program_text, const size_t &program_len, const c
         throw std::runtime_error("Error: Failed create kernel!\n");
     }
 
-    cl_command_queue queue = clCreateCommandQueue(context, device_id, 0, &err);
+    cl_command_queue queue = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
 
     cl_mem input_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE, input_size, nullptr, nullptr);
     if (!input_buffer) { throw std::runtime_error("Error: Failed to allocate device memory!\n"); }
@@ -94,6 +93,7 @@ void executeKernel(const char *&program_text, const size_t &program_len, const c
     }
 
     size_t global_size[1] = {glob_size };
+    cl_event event;
     err |= clEnqueueNDRangeKernel(
             queue,
             kernel,
@@ -103,15 +103,27 @@ void executeKernel(const char *&program_text, const size_t &program_len, const c
             nullptr,
             0,
             nullptr,
-            nullptr
+            &event
     );
+    clWaitForEvents(1, &event);
     if (err) {
         throw std::runtime_error("Error: Failed while clEnqueueNDRangeKernel!\n");
     }
 
     err |= clEnqueueReadBuffer(queue, res_buffer, CL_TRUE, 0, res_size, (void *)res, 0, nullptr, nullptr);
 
+
     clFinish(queue);
+
+
+    cl_ulong device_time_start;
+    cl_ulong device_time_end;
+    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(device_time_start), &device_time_start, nullptr);
+    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(device_time_end), &device_time_end, nullptr);
+
+    double device_time = device_time_end-device_time_start;
+
+    printf("OpenCl kernel Execution time is: %0.3f ms \n",device_time / 1000000.0);
 }
 
 

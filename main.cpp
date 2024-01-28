@@ -37,7 +37,13 @@ int main() {
     std::vector<SpatialData> grid = makeGrid(lonMin, latMin, lonMax, latMax, SIZE, SIZE);
     std::vector<SpatialData> gridGPU(grid);
 
+    auto seq_time_start = std::chrono::high_resolution_clock::now();
+
     idw_vector_no_mem(input, grid);
+    auto seq_time_end = std::chrono::high_resolution_clock::now();
+    float seq_time = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(seq_time_end - seq_time_start).count());
+    printf("Seq time: %f ms\n", seq_time);
+
 
     IdwGpu ig(&input[0], &gridGPU[0], input.size(), gridGPU.size());
     ig.Calculate();
