@@ -11,8 +11,8 @@ std::vector<SpatialData> makeGrid(
         int latMin,
         int lonMax,
         int latMax,
-        uint stepsLon,
-        uint stepsLat)
+        int stepsLon,
+        int stepsLat)
 {
     std::vector<SpatialData> result;
     int dLon = (lonMax - lonMin) / stepsLon;

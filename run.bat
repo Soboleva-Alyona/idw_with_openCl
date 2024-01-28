@@ -1,0 +1,1 @@
+gcc -o idw.exe main.cpp -I "C:\Program Files (x86)\OCL_SDK_Light/include" -L "C:\Program Files (x86)\OCL_SDK_Light/lib/x86_64" -lOpenCl
