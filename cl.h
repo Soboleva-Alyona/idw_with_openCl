@@ -1,39 +1,35 @@
-#include <cstdint>
-#include <OpenCL/cl.h>
-#include <fcntl.h>
-#include <opencl-c.h>
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
-class SpatialData
+typedef struct
 {
-public:
-    SpatialData() = default;
-    SpatialData(int64_t lon, int64_t lat, double d) : longitude(lon), latitude(lat), data(d) {}
-public:
-    int64_t longitude;
-    int64_t latitude;
-    double data;
-};
+    int longitude;
+    int latitude;
+    float data;
+} SpatialData;
 
 __kernel void idw_interpolation(
-        __global const SpatialData * input, __global const SpatialData * output
+        __global const SpatialData * input, __global SpatialData * output, uint input_size
 ) {
-    const int size = input.size();
-    double r = 0;
-    double divider = 0;
+    float r = 0;
+    float divider = 0;
 
     size_t output_index = get_global_id(0);
 
-    for (int k = 0; k < size; k++)
+    for (int k = 0; k < input_size; k++)
     {
-        // Calculate the distance
-        int64_t longitude_dif = input[k].longitude - output[output_index].longitude;
-        int64_t latitude_dif = input[k].latitude - output[output_index].latitude;
 
-        double d_k = sqrt(pow(longitude_dif, 2) + pow(latitude_dif, 2));
+        // Calculate the distance
+        float longitude_dif = input[k].longitude - output[output_index].longitude;
+        float latitude_dif = input[k].latitude - output[output_index].latitude;
+
+        float d_k = hypot(longitude_dif, latitude_dif);
+
         r += input[k].data / d_k;
+
         divider += 1.0 / d_k;
     }
 
     output[output_index].data = r / divider;
+
 
 }

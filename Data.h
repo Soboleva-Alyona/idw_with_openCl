@@ -6,12 +6,11 @@
 class SpatialData
 {
 public:
-    SpatialData() = default;
-    SpatialData(int64_t lon, int64_t lat, double d) : longitude(lon), latitude(lat), data(d) {}
+    SpatialData(int lon, int lat, float d) : longitude(lon), latitude(lat), data(d) {}
 public:
-    int64_t longitude;
-    int64_t latitude;
-    double data;
+    int longitude;
+    int latitude;
+    float data;
 };
 
 

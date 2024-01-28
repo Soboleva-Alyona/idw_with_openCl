@@ -1,47 +1,52 @@
 #include <limits>
+#include <vector>
 #include "IdwGpu.h"
 
 #define SIZE 200
 
+#define EPS 0.00001
+
 std::vector<SpatialData> makeGrid(
-        int64_t lonMin,
-        int64_t latMin,
-        int64_t lonMax,
-        int64_t latMax,
-        uint64_t stepsLon,
-        uint64_t stepsLat)
+        int lonMin,
+        int latMin,
+        int lonMax,
+        int latMax,
+        uint stepsLon,
+        uint stepsLat)
 {
     std::vector<SpatialData> result;
-    int64_t dLon = (lonMax - lonMin) / stepsLon;
-    int64_t dLat = (latMax - latMin) / stepsLat;
-    for (int64_t lon = lonMin; lon <= lonMax; lon += dLon)
+    int dLon = (lonMax - lonMin) / stepsLon;
+    int dLat = (latMax - latMin) / stepsLat;
+    for (int lon = lonMin; lon <= lonMax; lon += dLon)
     {
-        for (int64_t lat = latMin; lat <= latMax; lat += dLat)
+        for (int lat = latMin; lat <= latMax; lat += dLat)
         {
-            result.emplace_back(lon, lat, 0);
+            result.push_back(SpatialData(lon, lat, 0));
         }
     }
     return result;
 }
 
 int main() {
-    int64_t lonMin = std::numeric_limits<int64_t>::max();
-    int64_t latMin = std::numeric_limits<int64_t>::max();
-    int64_t lonMax = std::numeric_limits<int64_t>::min();
-    int64_t latMax = std::numeric_limits<int64_t>::min();
-    const auto input = read_csv("Table1_Propane.csv", lonMin, latMin, lonMax, latMax);
+    int lonMin = std::numeric_limits<int>::max();
+    int latMin = std::numeric_limits<int>::max();
+    int lonMax = std::numeric_limits<int>::min();
+    int latMax = std::numeric_limits<int>::min();
+    const std::vector<SpatialData> input = read_csv("Table1_Propane.csv", lonMin, latMin, lonMax, latMax);
 
-    auto grid = makeGrid(lonMin, latMin, lonMax, latMax, SIZE, SIZE);
-    auto gridGPU(grid);
+    std::vector<SpatialData> grid = makeGrid(lonMin, latMin, lonMax, latMax, SIZE, SIZE);
+    std::vector<SpatialData> gridGPU(grid);
 
     idw_vector_no_mem(input, grid);
 
-    IdwGpu ig(input, gridGPU); // Выгрузку на GPU можно локализовать в отдельном классе.
+    IdwGpu ig(&input[0], &gridGPU[0], input.size(), gridGPU.size());
     ig.Calculate();
 
     for (int i = 0; i < gridGPU.size(); ++i)
     {
-        //equals(grid[i].data, ig.outputData[i].data);
+        if (fabs(grid[i].data - ig.outputData[i].data) > EPS) {
+            printf("values for %i index are different\n", i);
+        }
     }
     return 0;
 }

@@ -1,7 +1,6 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "Data.h"
 
 std::string stringFromFile(const std::string& filename) {
     const std::string& path = filename;
@@ -12,7 +11,7 @@ std::string stringFromFile(const std::string& filename) {
     return str;
 }
 
-std::vector<SpatialData> read_csv(const std::string& filename, int64_t & lonMin, int64_t & latMin, int64_t & lonMax, int64_t & latMax) {
+std::vector<SpatialData> read_csv(const std::string& filename, int & lonMin, int & latMin, int & lonMax, int & latMax) {
     std::vector<SpatialData> result;
 
     std::ifstream myFile(filename);
@@ -30,8 +29,8 @@ std::vector<SpatialData> read_csv(const std::string& filename, int64_t & lonMin,
     while(std::getline(myFile, line)) {
         std::stringstream ss(line);
 
-        int64_t longitude;
-        int64_t latitude;
+        int longitude;
+        int latitude;
         double data;
 
         ss >> longitude;
@@ -40,7 +39,7 @@ std::vector<SpatialData> read_csv(const std::string& filename, int64_t & lonMin,
         if(ss.peek() == ',') ss.ignore();
         ss >> data;
 
-        result.at(colIdx) = SpatialData(longitude, latitude, data);
+        result.push_back(SpatialData(longitude, latitude, data));
         colIdx++;
 
         if (longitude < lonMin) {
