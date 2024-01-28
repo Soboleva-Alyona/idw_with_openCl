@@ -1,3 +1,0 @@
-/Users/esoboleva/CLionProjects/idwWithOpenCl/cmake-build-debug/CMakeFiles/idwWithOpenCl.dir
-/Users/esoboleva/CLionProjects/idwWithOpenCl/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/esoboleva/CLionProjects/idwWithOpenCl/cmake-build-debug/CMakeFiles/rebuild_cache.dir
