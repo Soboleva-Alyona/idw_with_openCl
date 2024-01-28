@@ -1,5 +1,6 @@
 #include <limits>
 #include <vector>
+#include <chrono>
 #include "IdwGpu.h"
 
 #define SIZE 200
