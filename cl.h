@@ -30,6 +30,4 @@ __kernel void idw_interpolation(
     }
 
     output[output_index].data = r / divider;
-
-
 }
